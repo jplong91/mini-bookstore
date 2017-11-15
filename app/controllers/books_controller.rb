@@ -13,4 +13,9 @@ class BooksController < ApplicationController
     book = Book.third
     render json: book
   end
+
+  def all
+    books = Book.all
+    render json: books
+  end
 end
