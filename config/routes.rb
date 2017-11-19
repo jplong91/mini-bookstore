@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
-  get "/the_way_of_kings" => "books#kings"
-  get "/the_eye_of_the_world" => "books#eye"
-  get "/the_name_of_the_wind" => "books#wind"
-  get "/all_books" => "books#all"
+  namespace :v1 do
+    get "/books" => "books#index"
+    get "/books/:id" => "books#show"
+    post "/books" => "books#create"
+    patch "/books/:id" => "books#update"
+    delete "/books/:id" => "books#destroy"
+  end
 end
