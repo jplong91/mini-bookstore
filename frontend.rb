@@ -21,6 +21,7 @@ def show_single_book(book)
   puts "Author: #{book["author"]}"
   puts "Book Price: #{book["price"]}"
   puts "Number of pages: #{book["pages"]}"
+  puts "Book in stock: #{book["in_stock"]}"
   puts "\nTo view book cover image, hold 'command' and double click on the url below"
   puts book["image"]
   puts "*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*"
@@ -29,11 +30,11 @@ end
 # Main Loop
 while true
   mm_options = {
-    "View a Book from your Library" => 1, 
-    "View your whole Library" => 2,
-    "Add a Book to your Library" =>3,
-    "Update a Book in your Library" => 4,
-    "Remove a Book from your Library" => 5,
+    "View a Book" => 1, 
+    "View all Books" => 2,
+    "Add a Book" =>3,
+    "Update a Book" => 4,
+    "Remove a Book" => 5,
     "Exit" => 6, 
   }
   input_main_option = prompt.select("\n@----- MAIN MENU -----@", mm_options)
@@ -77,7 +78,7 @@ while true
     params[:image] = gets.chomp
     response = Unirest.post("http://localhost:3000/v1/books", parameters: params)
     book = response.body
-    puts "\nYou've added a book to your Library!"
+    puts "\nYou've added a book!"
     response = Unirest.get("http://localhost:3000/v1/books/#{book["id"]}")
     book = response.body
     show_single_book(book)

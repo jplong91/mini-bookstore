@@ -29,6 +29,7 @@ class V1::BooksController < ApplicationController
     book.price = params[:price] || book.price
     book.pages = params[:pages] || book.pages
     book.image = params[:image] || book.image
+    book.in_stock = params[:in_stock] || book.in_stock
     book.save
     render json: book.as_json
   end

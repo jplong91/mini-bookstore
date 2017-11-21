@@ -1,6 +1,6 @@
 class Book < ApplicationRecord
   def is_discounted
-    if price.to_i < 2
+    if price < 2
       true
     else
       false
@@ -8,11 +8,11 @@ class Book < ApplicationRecord
   end
 
   def tax
-    price.to_i * (0.09)
+    price * (0.09)
   end
 
   def total
-    tax + price.to_i
+    tax + price
   end
 
   def friendly_updated_at
@@ -26,6 +26,7 @@ class Book < ApplicationRecord
       author: self.author,
       pages: self.pages,
       image: self.image,
+      in_stock: self.in_stock,
       price: self.price,
       price_with_tax: self.total,
       updated_at: self.friendly_updated_at
