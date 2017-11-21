@@ -1,13 +1,13 @@
 class V1::BooksController < ApplicationController
   def index
     books = Book.all
-    render json: books
+    render json: books.as_json
   end
 
   def show
     book_id = params["id"]
     book = Book.find_by(id: book_id)
-    render json: book
+    render json: book.as_json
   end
 
   def create
@@ -18,7 +18,7 @@ class V1::BooksController < ApplicationController
       pages: params[:pages],
       image: params[:image]
     )
-    render json: book
+    render json: book.as_json
   end
 
   def update

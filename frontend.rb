@@ -19,7 +19,7 @@ def show_single_book(book)
   puts "*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*"
   puts "Title: #{book["title"]}"
   puts "Author: #{book["author"]}"
-  puts "Book Price: $#{book["price"]}"
+  puts "Book Price: #{book["price"]}"
   puts "Number of pages: #{book["pages"]}"
   puts "\nTo view book cover image, hold 'command' and double click on the url below"
   puts book["image"]
@@ -125,6 +125,7 @@ while true
 
     if att_selection == "Return to Menu (does not apply changes)"
     else
+      params.delete_if { |_key, value| value.empty? }
       response = Unirest.patch("http://localhost:3000/v1/books/#{input_book_option}", parameters: params)
       book = response.body
       puts "\nChanges Applied"
@@ -148,7 +149,7 @@ while true
       book = response.body
       puts "\nBook deleted."
       sleep 0.5
-      puts "\nReturning to Menu..."
+      puts "\nReturning to Main Menu..."
       sleep 0.5
     end
   end
