@@ -78,10 +78,14 @@ while true
     params[:image] = gets.chomp
     response = Unirest.post("http://localhost:3000/v1/books", parameters: params)
     book = response.body
-    puts "\nYou've added a book!"
-    response = Unirest.get("http://localhost:3000/v1/books/#{book["id"]}")
-    book = response.body
-    show_single_book(book)
+    if book["errors"]
+      puts "\nDID NOT SAVE. INVALID ENTRY:"
+      puts book["errors"]
+    else
+      puts "\nYou've added a book!"
+      sleep 0.75
+      show_single_book(book)
+    end
 
   # Update Book
   elsif input_main_option == 4
@@ -129,9 +133,14 @@ while true
       params.delete_if { |_key, value| value.empty? }
       response = Unirest.patch("http://localhost:3000/v1/books/#{input_book_option}", parameters: params)
       book = response.body
-      puts "\nChanges Applied"
-      sleep 0.5
-      show_single_book(book)
+      if book["errors"]
+        puts "\nDID NOT SAVE. INVALID ENTRY:"
+        puts book["errors"]
+      else
+        puts "\nChanges Applied"
+        sleep 0.5
+        show_single_book(book)
+      end
     end
 
     # Delete a Book
