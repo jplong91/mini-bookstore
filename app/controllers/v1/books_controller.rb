@@ -11,14 +11,18 @@ class V1::BooksController < ApplicationController
   end
 
   def create
-    book = Book.create(
+    book = Book.new(
       title: params[:title],
       author: params[:author],
       price: params[:price],
       pages: params[:pages],
       image: params[:image]
     )
-    render json: book.as_json
+    if book.save
+      render json: book.as_json
+    else
+      render json: {errors: book.errors.full_messages}, status: :bad_request
+    end
   end
 
   def update
@@ -30,8 +34,11 @@ class V1::BooksController < ApplicationController
     book.pages = params[:pages] || book.pages
     book.image = params[:image] || book.image
     book.in_stock = params[:in_stock] || book.in_stock
-    book.save
-    render json: book.as_json
+    if book.save
+      render json: book.as_json
+    else
+      render json: {errors: book.errors.full_messages}, status: :bad_request
+    end
   end
 
   def destroy

@@ -1,4 +1,9 @@
 class Book < ApplicationRecord
+  validates :title, presence: true
+  validates :author, presence: true
+  validates :price, numericality: { greater_than: 0 }
+  validates :pages, numericality: { only_integer: true }
+
   def is_discounted
     if price < 2
       true
