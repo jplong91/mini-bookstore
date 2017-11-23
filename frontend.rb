@@ -54,13 +54,45 @@ while true
 
   # All Books Option
   elsif input_main_option == 2
-    response = Unirest.get("http://localhost:3000/v1/books")
-    books = response.body
-    books.each do |indiv|
-      puts
-      puts indiv["title"]
-      puts indiv["author"]
-      puts "Number of pages: #{indiv["pages"]}"
+    ab_options = {
+      "View all books" => 1,
+      "Search by book title" => 2,
+      "View all books sorted by price" => 3
+    }
+    input_ab_menu_option = prompt.select("\nALL BOOKS MENU", ab_options)
+
+    # Show all books
+    if input_ab_menu_option == 1
+      response = Unirest.get("http://localhost:3000/v1/books")
+      books = response.body
+      books.each do |indiv|
+        puts
+        puts indiv["title"]
+        puts indiv["author"]
+        puts "Number of pages: #{indiv["pages"]}"
+      end
+    # Search by title
+    elsif input_ab_menu_option == 2
+      print "Search by book title: "
+      search_title_terms = gets.chomp
+      response = Unirest.get("http://localhost:3000/v1/books?search=#{search_title_terms}")
+      books = response.body
+      books.each do |indiv|
+        puts
+        puts indiv["title"]
+        puts indiv["author"]
+        puts "Number of pages: #{indiv["pages"]}"
+      end
+    # Sort by price
+    elsif input_ab_menu_option == 3
+      response = Unirest.get("http://localhost:3000/v1/books?sort_by_price=true")
+      books = response.body
+      books.each do |indiv|
+        puts
+        puts indiv["title"]
+        puts indiv["author"]
+        puts "Book price: #{indiv["price"]}"
+      end
     end
 
   # Create Book

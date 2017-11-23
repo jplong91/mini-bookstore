@@ -1,6 +1,12 @@
 class V1::BooksController < ApplicationController
   def index
-    books = Book.all
+    books = Book.all.order(:id => :asc)
+    if params[:search]
+      books = books.where("title ILIKE ?", "%#{params[:search]}%")
+    end
+    if params[:sort_by_price]
+      books = Book.order(:price => :asc)
+    end
     render json: books.as_json
   end
 
