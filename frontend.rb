@@ -3,10 +3,11 @@ require "tty-prompt"
 require "tty-table"
 
 prompt = TTY::Prompt.new
+$base_url = "http://localhost:3000/v1/"
 
 def compile_book_menu
   book_menu_options = {}
-  response = Unirest.get("http://localhost:3000/v1/books")
+  response = Unirest.get("#{$base_url}books")
   books = response.body
   books.each do |indiv|
     book_menu_options[indiv["title"]] = indiv["id"]
@@ -48,7 +49,7 @@ while true
   elsif input_main_option == 1
 
     input_book_option = prompt.select("\nSelect a Book to see more details", compile_book_menu)
-    response = Unirest.get("http://localhost:3000/v1/books/#{input_book_option}")
+    response = Unirest.get("#{$base_url}books/#{input_book_option}")
     book = response.body
     show_single_book(book)
 
@@ -63,7 +64,7 @@ while true
 
     # Show all books
     if input_ab_menu_option == 1
-      response = Unirest.get("http://localhost:3000/v1/books")
+      response = Unirest.get("#{$base_url}books")
       books = response.body
       books.each do |indiv|
         puts
@@ -75,7 +76,7 @@ while true
     elsif input_ab_menu_option == 2
       print "Search by book title: "
       search_title_terms = gets.chomp
-      response = Unirest.get("http://localhost:3000/v1/books?search=#{search_title_terms}")
+      response = Unirest.get("#{$base_url}books?search=#{search_title_terms}")
       books = response.body
       books.each do |indiv|
         puts
@@ -85,7 +86,7 @@ while true
       end
     # Sort by price
     elsif input_ab_menu_option == 3
-      response = Unirest.get("http://localhost:3000/v1/books?sort_by_price=true")
+      response = Unirest.get("#{$base_url}books?sort_by_price=true")
       books = response.body
       books.each do |indiv|
         puts
@@ -108,7 +109,7 @@ while true
     params[:pages] = gets.chomp
     print "Please enter a URL for the book image: "
     params[:image] = gets.chomp
-    response = Unirest.post("http://localhost:3000/v1/books", parameters: params)
+    response = Unirest.post("#{$base_url}books", parameters: params)
     book = response.body
     if book["errors"]
       puts "\nDID NOT SAVE. INVALID ENTRY:"
@@ -123,7 +124,7 @@ while true
   elsif input_main_option == 4
 
     input_book_option = prompt.select("\nSelect the book you would like to update", compile_book_menu)
-    response = Unirest.get("http://localhost:3000/v1/books/#{input_book_option}")
+    response = Unirest.get("#{$base_url}books/#{input_book_option}")
     book = response.body
 
     # Book Update Features Loop
@@ -163,7 +164,7 @@ while true
     if att_selection == "Return to Menu (does not apply changes)"
     else
       params.delete_if { |_key, value| value.empty? }
-      response = Unirest.patch("http://localhost:3000/v1/books/#{input_book_option}", parameters: params)
+      response = Unirest.patch("#{$base_url}books/#{input_book_option}", parameters: params)
       book = response.body
       if book["errors"]
         puts "\nDID NOT SAVE. INVALID ENTRY:"
@@ -179,7 +180,7 @@ while true
   elsif input_main_option == 5
 
     input_book_option = prompt.select("\nSelect the book you would like to delete", compile_book_menu)
-    response = Unirest.get("http://localhost:3000/v1/books/#{input_book_option}")
+    response = Unirest.get("#{$base_url}books/#{input_book_option}")
     book = response.body
     show_single_book(book)
 
@@ -187,7 +188,7 @@ while true
     puts "Type 'yes' to confirm, anything else to return to menu"
     final_delete = gets.chomp
     if final_delete == "yes"
-      response = Unirest.delete("http://localhost:3000/v1/books/#{input_book_option}")
+      response = Unirest.delete("#{$base_url}books/#{input_book_option}")
       book = response.body
       puts "\nBook deleted."
       sleep 0.5
