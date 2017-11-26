@@ -2,6 +2,26 @@ require "unirest"
 require "tty-prompt"
 require "tty-table"
 
+# class Frontend
+#   def initialize
+#     @prompt = TTY::Prompt.new
+#     @base_url = "jfkdls"
+#   end
+
+#   def compile_book_menu
+#   end
+
+#   def show_single_book
+#   end
+
+#   def run
+#   end
+# end
+
+# frontend = Frontend.new
+# frontend.run
+
+
 prompt = TTY::Prompt.new
 $base_url = "http://localhost:3000/v1/"
 
