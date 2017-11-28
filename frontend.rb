@@ -57,8 +57,7 @@ while true
     "Add a Book" =>3,
     "Update a Book" => 4,
     "Remove a Book" => 5,
-    "Create new User" => 8,
-    "Delete a User" => 9, 
+    "User Menu" => 10,
     "Exit" => 6
   }
   input_main_option = prompt.select("\n@----- MAIN MENU -----@", mm_options)
@@ -68,28 +67,58 @@ while true
     puts "\nGoobye"
     break
 
-  # Create User
-  elsif input_main_option == 8
-    params = {}
-    print "Name: "
-    params[:name] = gets.chomp
-    print "Email: "
-    params[:email] = gets.chomp
-    print "Password: "
-    params[:password] = gets.chomp
-    print "Confirm Password: "
-    params[:password_confirmation] = gets.chomp
+  # User Menu
+  elsif input_main_option == 10
+    usermenu_options = {
+      "Create User" => 1,
+      "Login" => 2,
+      "Logout" => 3,
+      "Delete User" => 4,
+      "Back to Main Menu" => 5
+    }
+    usermenu_selection = prompt.select("\nUSER MENU", usermenu_options)
 
-    response = Unirest.post("#{$base_url}users", parameters: params)
-    puts response.body
+    # Back to MM
+    if usermenu_selection == 5
 
-  # Delete User
-  elsif input_main_option == 9
-    print "Enter the ID of the user you would like to delete: "
-    delete_id = gets.chomp
-    response = Unirest.delete("#{$base_url}users/#{delete_id}")
-    puts
-    puts response.body
+    # Create User
+    elsif usermenu_selection == 1
+      params = {}
+      print "Name: "
+      params[:name] = gets.chomp
+      print "Email: "
+      params[:email] = gets.chomp
+      print "Password: "
+      params[:password] = gets.chomp
+      print "Confirm Password: "
+      params[:password_confirmation] = gets.chomp
+
+      response = Unirest.post("#{$base_url}users", parameters: params)
+      puts response.body
+
+    # Delete User
+    elsif usermenu_selection == 4
+      print "Enter the ID of the user you would like to delete: "
+      delete_id = gets.chomp
+      response = Unirest.delete("#{$base_url}users/#{delete_id}")
+      puts
+      puts response.body
+
+    # Login
+    elsif usermenu_selection == 2
+      params = {}
+      print "Email: "
+      params[:email] = gets.chomp
+      print "Password: "
+      params[:password] = gets.chomp
+      response = Unirest.post("http://localhost:3000/user_token", parameters: {auth: params})
+      jwt = response.body["jwt"]
+      Unirest.default_header("Authorization", "Bearer #{jwt}")
+
+    elsif usermenu_selection == 3
+      jwt = ""
+      Unirest.clear_default_headers()
+    end
 
   # Single Book Option  
   elsif input_main_option == 1
