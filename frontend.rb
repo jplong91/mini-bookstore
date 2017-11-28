@@ -57,7 +57,9 @@ while true
     "Add a Book" =>3,
     "Update a Book" => 4,
     "Remove a Book" => 5,
-    "Exit" => 6, 
+    "Create new User" => 8,
+    "Delete a User" => 9, 
+    "Exit" => 6
   }
   input_main_option = prompt.select("\n@----- MAIN MENU -----@", mm_options)
   
@@ -65,6 +67,29 @@ while true
   if input_main_option == 6
     puts "\nGoobye"
     break
+
+  # Create User
+  elsif input_main_option == 8
+    params = {}
+    print "Name: "
+    params[:name] = gets.chomp
+    print "Email: "
+    params[:email] = gets.chomp
+    print "Password: "
+    params[:password] = gets.chomp
+    print "Confirm Password: "
+    params[:password_confirmation] = gets.chomp
+
+    response = Unirest.post("#{$base_url}users", parameters: params)
+    puts response.body
+
+  # Delete User
+  elsif input_main_option == 9
+    print "Enter the ID of the user you would like to delete: "
+    delete_id = gets.chomp
+    response = Unirest.delete("#{$base_url}users/#{delete_id}")
+    puts
+    puts response.body
 
   # Single Book Option  
   elsif input_main_option == 1
@@ -211,4 +236,6 @@ while true
       sleep 0.5
     end
   end
+  print "\nPress enter to return to Main Menu"
+  gets.chomp
 end
