@@ -43,8 +43,9 @@ def show_single_book(book)
   puts "Book Price: #{book["price"]}"
   puts "Number of pages: #{book["pages"]}"
   puts "Book in stock: #{book["in_stock"]}"
-  puts "\nTo view book cover image, hold 'command' and double click on the url below"
-  puts book["image"]
+  puts "Publisher: #{book["publisher"]["name"]}"
+  puts "Cover Image (hold cmd + double click on URL to view in browser): "
+  puts "#{book["image"][0]}"
   puts "*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*"
 end
 
@@ -127,8 +128,6 @@ while true
     params[:price] = gets.chomp
     print "Please enter the number of pages in the book: "
     params[:pages] = gets.chomp
-    print "Please enter a URL for the book image: "
-    params[:image] = gets.chomp
     response = Unirest.post("#{$base_url}books", parameters: params)
     book = response.body
     if book["errors"]
@@ -151,7 +150,7 @@ while true
     params = {}
     while true
       show_single_book(book)
-      att_options = ["Title", "Author", "Price", "Num Pages", "Image URL", "Apply Changes", "Return to Menu (does not apply changes)"]
+      att_options = ["Title", "Author", "Price", "Num Pages", "Apply Changes", "Return to Menu (does not apply changes)"]
       att_selection = prompt.select("\nSelect an attribute you would like to update", att_options)
 
       if att_selection == "Title"
@@ -170,10 +169,6 @@ while true
         print "Please update the number of pages in the book: "
         params[:pages] = gets.chomp
         book["pages"] = params[:pages]
-      elsif att_selection == "Image URL"
-        print "Please update the URL for the book image: "
-        params[:image] = gets.chomp
-        book["image"] = params[:image]
       elsif att_selection == "Apply Changes"
         break
       elsif att_selection == "Return to Menu (does not apply changes)"

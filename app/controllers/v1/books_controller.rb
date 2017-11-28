@@ -21,8 +21,7 @@ class V1::BooksController < ApplicationController
       title: params[:title],
       author: params[:author],
       price: params[:price],
-      pages: params[:pages],
-      image: params[:image]
+      pages: params[:pages]
     )
     if book.save
       render json: book.as_json
@@ -38,7 +37,6 @@ class V1::BooksController < ApplicationController
     book.author = params[:author] || book.author
     book.price = params[:price] || book.price
     book.pages = params[:pages] || book.pages
-    book.image = params[:image] || book.image
     book.in_stock = params[:in_stock] || book.in_stock
     if book.save
       render json: book.as_json
