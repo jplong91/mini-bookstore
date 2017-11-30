@@ -2,28 +2,18 @@ require "unirest"
 require "tty-prompt"
 require "tty-table"
 
-# class Frontend
-#   def initialize
-#     @prompt = TTY::Prompt.new
-#     @base_url = "jfkdls"
-#   end
-
-#   def compile_book_menu
-#   end
-
-#   def show_single_book
-#   end
-
-#   def run
-#   end
-# end
-
-# frontend = Frontend.new
-# frontend.run
-
-
 prompt = TTY::Prompt.new
 $base_url = "http://localhost:3000/v1/"
+
+params = {email: "john@email.com", password: "john"}
+response = Unirest.post("http://localhost:3000/user_token", parameters: {auth: params})
+jwt = response.body["jwt"]
+if jwt == nil
+  puts "\nFailed to login. Please try again."
+else
+  puts "\nLogin successful"
+end
+Unirest.default_header("Authorization", "Bearer #{jwt}")
 
 def compile_book_menu
   book_menu_options = {}
@@ -113,8 +103,14 @@ while true
       params[:password] = gets.chomp
       response = Unirest.post("http://localhost:3000/user_token", parameters: {auth: params})
       jwt = response.body["jwt"]
+      if jwt == nil
+        puts "\nFailed to login. Please try again."
+      else
+        puts "\nLogin successful"
+      end
       Unirest.default_header("Authorization", "Bearer #{jwt}")
 
+    # Logout
     elsif usermenu_selection == 3
       jwt = ""
       Unirest.clear_default_headers()
@@ -126,7 +122,27 @@ while true
     input_book_option = prompt.select("\nSelect a Book to see more details", compile_book_menu)
     response = Unirest.get("#{$base_url}books/#{input_book_option}")
     book = response.body
-    show_single_book(book)
+    if response.code == 400
+      puts "\nPlease Login to View"
+    else 
+      show_single_book(book)
+      print "\nWould you like to order this book? (y/n): "
+      input_order = gets.chomp
+      if input_order == "y"
+        print "Enter a quantity to order: "
+        input_order_quantity = gets.chomp.to_i
+        response = Unirest.post("#{$base_url}orders", parameters: {
+          book_id: book["id"],
+          quantity: input_order_quantity,
+          price: book["price"],
+          tax: book["tax"],
+          total: book["price_with_tax"]
+        }
+      )
+        puts response.body
+      elsif input_order == "n"
+      end
+    end
 
   # All Books Option
   elsif input_main_option == 2

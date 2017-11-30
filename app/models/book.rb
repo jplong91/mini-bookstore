@@ -5,6 +5,7 @@ class Book < ApplicationRecord
   validates :pages, numericality: { only_integer: true }
 
   belongs_to :publisher
+  has_many :orders
   has_many :images
 
   def is_discounted
@@ -14,10 +15,6 @@ class Book < ApplicationRecord
       false
     end
   end
-
-  # def publisher
-  #   Publisher.find_by(id: publisher_id)
-  # end
 
   def tax
     price * (0.09)
@@ -40,6 +37,7 @@ class Book < ApplicationRecord
       image: self.images.map { |image| image.url },
       in_stock: self.in_stock,
       price: self.price,
+      tax: self.tax,
       price_with_tax: self.total,
       updated_at: self.friendly_updated_at,
       publisher: self.publisher.as_json

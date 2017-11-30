@@ -1,4 +1,6 @@
 class V1::BooksController < ApplicationController
+  before_action :authenticate_user
+
   def index
     books = Book.all.order(:id => :asc)
     if params[:search]
@@ -11,9 +13,13 @@ class V1::BooksController < ApplicationController
   end
 
   def show
-    book_id = params["id"]
-    book = Book.find_by(id: book_id)
-    render json: book.as_json
+    if current_user
+      book_id = params["id"]
+      book = Book.find_by(id: book_id)
+      render json: book.as_json
+    else
+      render json: "Please login to view your books", status: :bad_request
+    end
   end
 
   def create
@@ -51,4 +57,5 @@ class V1::BooksController < ApplicationController
     book.destroy
     render json: "Book successfully deleted"
   end
+  
 end
