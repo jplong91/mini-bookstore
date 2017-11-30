@@ -5,7 +5,7 @@ require "tty-table"
 prompt = TTY::Prompt.new
 $base_url = "http://localhost:3000/v1/"
 
-params = {email: "bob@email.com", password: "bob"}
+params = {email: "john@email.com", password: "john"}
 response = Unirest.post("http://localhost:3000/user_token", parameters: {auth: params})
 jwt = response.body["jwt"]
 if jwt == nil
@@ -39,9 +39,13 @@ def show_single_book(book)
   puts "*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*"
 end
 
+response = Unirest.get("#{$base_url}/current_user")
+user = response.body
+
 # Main Loop
 while true
-  mm_options = {
+  if user["admin"]
+    mm_options = {
     "View a Book" => 1, 
     "View all Books" => 2,
     "Add a Book" =>3,
@@ -50,7 +54,16 @@ while true
     "View your Order(s)" => 7,
     "User Menu" => 10,
     "Exit" => 6
-  }
+    }
+  else 
+    mm_options = {
+    "View a Book" => 1, 
+    "View all Books" => 2,
+    "View your Order(s)" => 7,
+    "User Menu" => 10,
+    "Exit" => 6
+    }
+  end
   input_main_option = prompt.select("\n@----- MAIN MENU -----@", mm_options)
   
   # Exit
@@ -276,10 +289,15 @@ while true
     if final_delete == "yes"
       response = Unirest.delete("#{$base_url}books/#{input_book_option}")
       book = response.body
-      puts "\nBook deleted."
-      sleep 0.5
-      puts "\nReturning to Main Menu..."
-      sleep 0.5
+      if book["errors"]
+        puts "\nDID NOT SAVE. INVALID ENTRY:"
+        puts book["errors"]
+      else 
+        puts "\nBook deleted."
+        sleep 0.5
+        puts "\nReturning to Main Menu..."
+        sleep 0.5
+      end
     end
 
   # View Orders

@@ -1,5 +1,6 @@
 class V1::BooksController < ApplicationController
   before_action :authenticate_user
+  before_action :authenticate_admin, except: [:index, :show]
 
   def index
     books = Book.all.order(:id => :asc)

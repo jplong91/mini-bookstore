@@ -24,5 +24,6 @@ Rails.application.routes.draw do
 
     post "/users" => "users#create"
     delete "/users/:id" => "users#destroy"
+    get "/current_user" => "users#admin"
   end
 end

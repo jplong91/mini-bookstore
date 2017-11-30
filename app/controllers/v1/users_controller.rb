@@ -21,4 +21,10 @@ class V1::UsersController < ApplicationController
     render json: "User deleted"
   end
 
+  def admin
+    user_id = current_user.id
+    user = User.find_by(id: user_id)
+    render json: user.as_json
+  end
+
 end
