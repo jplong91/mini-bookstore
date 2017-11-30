@@ -8,6 +8,40 @@ class Frontend
 
   def initialize
     @prompt = TTY::Prompt.new
+
+    # Auto Login
+    params = {email: "john@email.com", password: "john"}
+    response = Unirest.post("http://localhost:3000/user_token", parameters: {auth: params})
+    jwt = response.body["jwt"]
+    if jwt == nil
+      puts "\nFailed to login. Please try again."
+    else
+      puts "\nLogin successful"
+    end
+    Unirest.default_header("Authorization", "Bearer #{jwt}")
+
+    response = Unirest.get("#{$base_url}/current_user")
+    user = response.body
+    if user["admin"]
+      @mm_options = {
+        "View a Book" => -> do single_book_options end, 
+        "View all Books" => -> do show_all_books end,
+        "Add a Book" => -> do create_book end,
+        "Update a Book" => -> do update_book end,
+        "Remove a Book" => -> do delete_book end,
+        "View your Order(s)" => -> do view_orders end,
+        "User Menu" => -> do user_menu end,
+        "Exit" => -> do quit end
+      }
+    else
+      @mm_options = {
+        "View a Book" => -> do single_book_options end, 
+        "View all Books" => -> do show_all_books end,
+        "View your Order(s)" => -> do view_orders end,
+        "User Menu" => -> do user_menu end,
+        "Exit" => -> do quit end
+      }
+    end
   end
   
   def compile_book_menu
@@ -104,225 +138,181 @@ class Frontend
     end
   end
 
-  def run
-    params = {email: "john@email.com", password: "john"}
-    response = Unirest.post("http://localhost:3000/user_token", parameters: {auth: params})
-    jwt = response.body["jwt"]
-    if jwt == nil
-      puts "\nFailed to login. Please try again."
+  def create_book
+    params = {}
+    print "Please enter a book title: "
+    params[:title] = gets.chomp
+    print "Please enter the author of the book: "
+    params[:author] = gets.chomp
+    print "Please enter a book price: "
+    params[:price] = gets.chomp
+    print "Please enter the number of pages in the book: "
+    params[:pages] = gets.chomp
+    response = Unirest.post("#{$base_url}books", parameters: params)
+    book = response.body
+    if book["errors"]
+      puts "\nDID NOT SAVE. INVALID ENTRY:"
+      puts book["errors"]
     else
-      puts "\nLogin successful"
+      puts "\nYou've added a book!"
+      sleep 0.75
+      show_single_book(book)
     end
-    Unirest.default_header("Authorization", "Bearer #{jwt}")
+  end
 
-    response = Unirest.get("#{$base_url}/current_user")
-    user = response.body
+  def update_book
+    input_book_option = @prompt.select("\nSelect the book you would like to update", compile_book_menu)
+    response = Unirest.get("#{$base_url}books/#{input_book_option}")
+    book = response.body
 
-    # Main Loop
+    # Book Update Features Loop
+    params = {}
     while true
-      if user["admin"]
-        mm_options = {
-        "View a Book" => 1, 
-        "View all Books" => 2,
-        "Add a Book" =>3,
-        "Update a Book" => 4,
-        "Remove a Book" => 5,
-        "View your Order(s)" => 7,
-        "User Menu" => 10,
-        "Exit" => 6
-        }
-      else 
-        mm_options = {
-        "View a Book" => 1, 
-        "View all Books" => 2,
-        "View your Order(s)" => 7,
-        "User Menu" => 10,
-        "Exit" => 6
-        }
-      end
-      input_main_option = @prompt.select("\n@----- MAIN MENU -----@", mm_options)
-      
-      # Exit
-      if input_main_option == 6
-        puts "\nGoobye"
-        break
+      show_single_book(book)
+      att_options = ["Title", "Author", "Price", "Num Pages", "Apply Changes", "Return to Menu (does not apply changes)"]
+      att_selection = @prompt.select("\nSelect an attribute you would like to update", att_options)
 
-      # User Menu
-      elsif input_main_option == 10
-        usermenu_options = {
-          "Create User" => 1,
-          "Login" => 2,
-          "Logout" => 3,
-          "Delete User" => 4,
-          "Back to Main Menu" => 5
-        }
-        usermenu_selection = @prompt.select("\nUSER MENU", usermenu_options)
-
-        # Back to MM
-        if usermenu_selection == 5
-
-        # Create User
-        elsif usermenu_selection == 1
-          params = {}
-          print "Name: "
-          params[:name] = gets.chomp
-          print "Email: "
-          params[:email] = gets.chomp
-          print "Password: "
-          params[:password] = gets.chomp
-          print "Confirm Password: "
-          params[:password_confirmation] = gets.chomp
-
-          response = Unirest.post("#{$base_url}users", parameters: params)
-          puts response.body
-
-        # Delete User
-        elsif usermenu_selection == 4
-          print "Enter the ID of the user you would like to delete: "
-          delete_id = gets.chomp
-          response = Unirest.delete("#{$base_url}users/#{delete_id}")
-          puts
-          puts response.body
-
-        # Login
-        elsif usermenu_selection == 2
-          params = {}
-          print "Email: "
-          params[:email] = gets.chomp
-          print "Password: "
-          params[:password] = gets.chomp
-          response = Unirest.post("http://localhost:3000/user_token", parameters: {auth: params})
-          jwt = response.body["jwt"]
-          if jwt == nil
-            puts "\nFailed to login. Please try again."
-          else
-            puts "\nLogin successful"
-          end
-          Unirest.default_header("Authorization", "Bearer #{jwt}")
-
-        # Logout
-        elsif usermenu_selection == 3
-          jwt = ""
-          Unirest.clear_default_headers()
-        end
-
-      # Single Book Option  
-      elsif input_main_option == 1
-        single_book_options
-
-      # All Books Option
-      elsif input_main_option == 2
-        show_all_books
-
-      # Create Book
-      elsif input_main_option == 3
-        params = {}
-        print "Please enter a book title: "
+      if att_selection == "Title"
+        print "Please update the book title: "
         params[:title] = gets.chomp
-        print "Please enter the author of the book: "
+        book["title"] = params[:title]
+      elsif att_selection == "Author"
+        print "Please update the author of the book: "
         params[:author] = gets.chomp
-        print "Please enter a book price: "
+        book["author"] = params[:author]
+      elsif att_selection == "Price"
+        print "Please update the book price: "
         params[:price] = gets.chomp
-        print "Please enter the number of pages in the book: "
+        book["price"] = params[:price]
+      elsif att_selection == "Num Pages"
+        print "Please update the number of pages in the book: "
         params[:pages] = gets.chomp
-        response = Unirest.post("#{$base_url}books", parameters: params)
-        book = response.body
-        if book["errors"]
-          puts "\nDID NOT SAVE. INVALID ENTRY:"
-          puts book["errors"]
-        else
-          puts "\nYou've added a book!"
-          sleep 0.75
-          show_single_book(book)
-        end
-
-      # Update Book
-      elsif input_main_option == 4
-
-        input_book_option = @prompt.select("\nSelect the book you would like to update", compile_book_menu)
-        response = Unirest.get("#{$base_url}books/#{input_book_option}")
-        book = response.body
-
-        # Book Update Features Loop
-        params = {}
-        while true
-          show_single_book(book)
-          att_options = ["Title", "Author", "Price", "Num Pages", "Apply Changes", "Return to Menu (does not apply changes)"]
-          att_selection = @prompt.select("\nSelect an attribute you would like to update", att_options)
-
-          if att_selection == "Title"
-            print "Please update the book title: "
-            params[:title] = gets.chomp
-            book["title"] = params[:title]
-          elsif att_selection == "Author"
-            print "Please update the author of the book: "
-            params[:author] = gets.chomp
-            book["author"] = params[:author]
-          elsif att_selection == "Price"
-            print "Please update the book price: "
-            params[:price] = gets.chomp
-            book["price"] = params[:price]
-          elsif att_selection == "Num Pages"
-            print "Please update the number of pages in the book: "
-            params[:pages] = gets.chomp
-            book["pages"] = params[:pages]
-          elsif att_selection == "Apply Changes"
-            break
-          elsif att_selection == "Return to Menu (does not apply changes)"
-            break
-          end
-        end
-
-        if att_selection == "Return to Menu (does not apply changes)"
-        else
-          params.delete_if { |_key, value| value.empty? }
-          response = Unirest.patch("#{$base_url}books/#{input_book_option}", parameters: params)
-          book = response.body
-          if book["errors"]
-            puts "\nDID NOT SAVE. INVALID ENTRY:"
-            puts book["errors"]
-          else
-            puts "\nChanges Applied"
-            sleep 0.5
-            show_single_book(book)
-          end
-        end
-
-      # Delete a Book
-      elsif input_main_option == 5
-
-        input_book_option = @prompt.select("\nSelect the book you would like to delete", compile_book_menu)
-        response = Unirest.get("#{$base_url}books/#{input_book_option}")
-        book = response.body
-        show_single_book(book)
-
-        puts "\nAre you sure you want to delete this book?"
-        puts "Type 'yes' to confirm, anything else to return to menu"
-        final_delete = gets.chomp
-        if final_delete == "yes"
-          response = Unirest.delete("#{$base_url}books/#{input_book_option}")
-          book = response.body
-          if book["errors"]
-            puts "\nDID NOT SAVE. INVALID ENTRY:"
-            puts book["errors"]
-          else 
-            puts "\nBook deleted."
-            sleep 0.5
-            puts "\nReturning to Main Menu..."
-            sleep 0.5
-          end
-        end
-
-      # View Orders
-      elsif input_main_option == 7
-        response = Unirest.get("#{$base_url}orders")
-        orders = response.body
-        orders.each do |order|
-          response = Unirest.get("#{$base_url}books/#{order["book_id"]}")
-          book = response.body
-          puts "Title: #{book["title"]} - Qty Ordered: #{order["quantity"]} - Total: #{order["total"]}"
-        end
+        book["pages"] = params[:pages]
+      elsif att_selection == "Apply Changes"
+        break
+      elsif att_selection == "Return to Menu (does not apply changes)"
+        break
       end
+    end
+
+    if att_selection == "Return to Menu (does not apply changes)"
+    else
+      params.delete_if { |_key, value| value.empty? }
+      response = Unirest.patch("#{$base_url}books/#{input_book_option}", parameters: params)
+      book = response.body
+      if book["errors"]
+        puts "\nDID NOT SAVE. INVALID ENTRY:"
+        puts book["errors"]
+      else
+        puts "\nChanges Applied"
+        sleep 0.5
+        show_single_book(book)
+      end
+    end
+  end
+
+  def delete_book
+    input_book_option = @prompt.select("\nSelect the book you would like to delete", compile_book_menu)
+    response = Unirest.get("#{$base_url}books/#{input_book_option}")
+    book = response.body
+    show_single_book(book)
+
+    puts "\nAre you sure you want to delete this book?"
+    puts "Type 'yes' to confirm, anything else to return to menu"
+    final_delete = gets.chomp
+    if final_delete == "yes"
+      response = Unirest.delete("#{$base_url}books/#{input_book_option}")
+      book = response.body
+      if book["errors"]
+        puts "\nDID NOT SAVE. INVALID ENTRY:"
+        puts book["errors"]
+      else 
+        puts "\nBook deleted."
+        sleep 0.5
+        puts "\nReturning to Main Menu..."
+        sleep 0.5
+      end
+    end
+  end
+
+  def view_orders
+    response = Unirest.get("#{$base_url}orders")
+    orders = response.body
+    orders.each do |order|
+      response = Unirest.get("#{$base_url}books/#{order["book_id"]}")
+      book = response.body
+      puts "Title: #{book["title"]} - Qty Ordered: #{order["quantity"]} - Total: #{order["total"]}"
+    end
+  end
+
+  def user_menu
+    usermenu_options = {
+      "Create User" => 1,
+      "Login" => 2,
+      "Logout" => 3,
+      "Delete User" => 4,
+      "Back to Main Menu" => 5
+    }
+    usermenu_selection = @prompt.select("\nUSER MENU", usermenu_options)
+
+    # Back to MM
+    if usermenu_selection == 5
+
+    # Create User
+    elsif usermenu_selection == 1
+      params = {}
+      print "Name: "
+      params[:name] = gets.chomp
+      print "Email: "
+      params[:email] = gets.chomp
+      print "Password: "
+      params[:password] = gets.chomp
+      print "Confirm Password: "
+      params[:password_confirmation] = gets.chomp
+
+      response = Unirest.post("#{$base_url}users", parameters: params)
+      puts response.body
+
+    # Delete User
+    elsif usermenu_selection == 4
+      print "Enter the ID of the user you would like to delete: "
+      delete_id = gets.chomp
+      response = Unirest.delete("#{$base_url}users/#{delete_id}")
+      puts
+      puts response.body
+
+    # Login
+    elsif usermenu_selection == 2
+      params = {}
+      print "Email: "
+      params[:email] = gets.chomp
+      print "Password: "
+      params[:password] = gets.chomp
+      response = Unirest.post("http://localhost:3000/user_token", parameters: {auth: params})
+      jwt = response.body["jwt"]
+      if jwt == nil
+        puts "\nFailed to login. Please try again."
+      else
+        puts "\nLogin successful"
+      end
+      Unirest.default_header("Authorization", "Bearer #{jwt}")
+
+    # Logout
+    elsif usermenu_selection == 3
+      jwt = ""
+      Unirest.clear_default_headers()
+    end
+  end
+
+  def quit
+    puts "\nGoodbye"
+    exit
+  end
+
+  def run
+    while true
+      @prompt.select("\n@----- MAIN MENU -----@", @mm_options)
+
       print "\nPress enter to return to Main Menu"
       gets.chomp
     end
