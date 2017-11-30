@@ -17,6 +17,7 @@ class Order < ApplicationRecord
   def as_json
     {
       id: self.id,
+      book_id: self.book_id,
       quantity: self.quantity,
       subtotal: self.subtotal,
       tax: self.tax,

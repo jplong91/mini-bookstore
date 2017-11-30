@@ -5,7 +5,7 @@ require "tty-table"
 prompt = TTY::Prompt.new
 $base_url = "http://localhost:3000/v1/"
 
-params = {email: "john@email.com", password: "john"}
+params = {email: "bob@email.com", password: "bob"}
 response = Unirest.post("http://localhost:3000/user_token", parameters: {auth: params})
 jwt = response.body["jwt"]
 if jwt == nil
@@ -47,6 +47,7 @@ while true
     "Add a Book" =>3,
     "Update a Book" => 4,
     "Remove a Book" => 5,
+    "View your Order(s)" => 7,
     "User Menu" => 10,
     "Exit" => 6
   }
@@ -261,7 +262,7 @@ while true
       end
     end
 
-    # Delete a Book
+  # Delete a Book
   elsif input_main_option == 5
 
     input_book_option = prompt.select("\nSelect the book you would like to delete", compile_book_menu)
@@ -279,6 +280,16 @@ while true
       sleep 0.5
       puts "\nReturning to Main Menu..."
       sleep 0.5
+    end
+
+  # View Orders
+  elsif input_main_option == 7
+    response = Unirest.get("#{$base_url}orders")
+    orders = response.body
+    orders.each do |order|
+      response = Unirest.get("#{$base_url}books/#{order["book_id"]}")
+      book = response.body
+      puts "Title: #{book["title"]} - Qty Ordered: #{order["quantity"]} - Total: #{order["total"]}"
     end
   end
   print "\nPress enter to return to Main Menu"
