@@ -1,6 +1,10 @@
 Rails.application.routes.draw do
   post 'user_token' => 'user_token#create'
   namespace :v1 do
+    post "/carted_books" => "carted_books#create"
+    get "/carted_books" => "carted_books#index"
+    patch "/carted_books/:id" => "carted_books#update"
+
     post "/orders" => "orders#create"
     get "/orders" => "orders#index"
 

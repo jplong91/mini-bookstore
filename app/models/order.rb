@@ -1,6 +1,6 @@
 class Order < ApplicationRecord
   belongs_to :user
-  belongs_to :book
+  has_many :carted_products
 
   # def subtotal_a
   #   self.subtotal * quantity
@@ -17,8 +17,6 @@ class Order < ApplicationRecord
   def as_json
     {
       id: self.id,
-      book_id: self.book_id,
-      quantity: self.quantity,
       subtotal: self.subtotal,
       tax: self.tax,
       total: self.total

@@ -1,11 +1,14 @@
 class V1::BooksController < ApplicationController
-  before_action :authenticate_user
+  # before_action :authenticate_user
   before_action :authenticate_admin, except: [:index, :show]
 
   def index
     books = Book.all.order(:id => :asc)
     if params[:search]
       books = books.where("title ILIKE ?", "%#{params[:search]}%")
+    end
+    if params[:category_id]
+      books = Category.find_by(id: params[:category_id]).books
     end
     if params[:sort_by_price]
       books = Book.order(:price => :asc)
@@ -28,7 +31,8 @@ class V1::BooksController < ApplicationController
       title: params[:title],
       author: params[:author],
       price: params[:price],
-      pages: params[:pages]
+      pages: params[:pages],
+      publisher_id: params[:publisher_id]
     )
     if book.save
       render json: book.as_json

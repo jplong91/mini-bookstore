@@ -29,7 +29,7 @@ class Frontend
         "Add a Book" => -> do create_book end,
         "Update a Book" => -> do update_book end,
         "Remove a Book" => -> do delete_book end,
-        "View your Order(s)" => -> do view_orders end,
+        "Cart Menu" => -> do cart_menu end,
         "User Menu" => -> do user_menu end,
         "Exit" => -> do quit end
       }
@@ -54,6 +54,16 @@ class Frontend
     return book_menu_options
   end
 
+  def compile_publisher_menu
+    publisher_menu_options = {}
+    response = Unirest.get("#{$base_url}publishers")
+    publishers = response.body
+    publishers.each do |indiv|
+      publisher_menu_options[indiv["name"]] = indiv["id"]
+    end
+    return publisher_menu_options
+  end
+
   def show_single_book(book)
     puts "\nBook Details"
     puts "*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*"
@@ -76,20 +86,17 @@ class Frontend
       puts "\nPlease Login to View"
     else 
       show_single_book(book)
-      print "\nWould you like to order this book? (y/n): "
+      print "\nWould you like to add this book to your cart? (y/n): "
       input_order = gets.chomp
       if input_order == "y"
         print "Enter a quantity to order: "
         input_order_quantity = gets.chomp.to_i
-        response = Unirest.post("#{$base_url}orders", parameters: {
+        response = Unirest.post("#{$base_url}carted_books", parameters: {
           book_id: book["id"],
-          quantity: input_order_quantity,
-          price: book["price"],
-          tax: book["tax"],
-          total: book["price_with_tax"]
-        }
-      )
-        puts response.body
+          quantity: input_order_quantity
+          }
+        )
+        puts "#{book["title"]} has been added to Cart!"
       elsif input_order == "n"
       end
     end
@@ -148,6 +155,8 @@ class Frontend
     params[:price] = gets.chomp
     print "Please enter the number of pages in the book: "
     params[:pages] = gets.chomp
+    input_publisher_option = @prompt.select("\nSelect a Publisher for the Book", compile_publisher_menu)
+    params[:publisher_id] = input_publisher_option
     response = Unirest.post("#{$base_url}books", parameters: params)
     book = response.body
     if book["errors"]
@@ -235,13 +244,54 @@ class Frontend
     end
   end
 
-  def view_orders
-    response = Unirest.get("#{$base_url}orders")
-    orders = response.body
-    orders.each do |order|
-      response = Unirest.get("#{$base_url}books/#{order["book_id"]}")
-      book = response.body
-      puts "Title: #{book["title"]} - Qty Ordered: #{order["quantity"]} - Total: #{order["total"]}"
+  def cart_menu
+    cartmenu_options = {
+      "View Your Cart" => 1,
+      "Order Books in Cart" => 2,
+      "Remove Item from Cart" => 3,
+      "Back to Main Menu" => 4
+    }
+    cartmenu_selection = @prompt.select("\nUSER MENU", cartmenu_options)
+
+    # Back to MM
+    if cartmenu_selection == 4
+
+    #  View Books in Cart
+    elsif cartmenu_selection == 1
+      response = Unirest.get("#{$base_url}carted_books")
+      carted_books = response.body
+      carted_books.each do |order|
+        response = Unirest.get("#{$base_url}books/#{order["book_id"]}")
+        book = response.body
+        total = book["price"] * order["quantity"]
+        puts "Title: #{book["title"]} - Qty Ordered: #{order["quantity"]} - Total: #{total}"
+      end
+
+    # Order Everything in Cart
+    elsif cartmenu_selection == 2
+      response = Unirest.post("#{$base_url}orders")
+      order = response.body
+      puts order
+
+    # Remove Item(s) from Cart
+    elsif cartmenu_selection == 3
+      remove_book_menu = {}
+      response = Unirest.get("#{$base_url}carted_books")
+      carted_books = response.body
+
+      # Loops through each order item. Compiles remove_book_menu by extracting necessary info
+      carted_books.each do |order|
+        response = Unirest.get("#{$base_url}books/#{order["book_id"]}")
+        book = response.body
+        total = book["price"] * order["quantity"]
+        remove_book_menu["Title: #{book["title"]} - Qty Ordered: #{order["quantity"]} - Total: #{total}"] = order["id"]
+      end
+      remove_id = @prompt.select("\nSelected Item to Remove from Cart", remove_book_menu)
+      response = Unirest.patch("#{$base_url}carted_books/#{remove_id}", parameters: {
+        id: remove_id
+        }
+      )
+      p response.body
     end
   end
 

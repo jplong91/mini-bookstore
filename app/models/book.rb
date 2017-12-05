@@ -5,8 +5,11 @@ class Book < ApplicationRecord
   validates :pages, numericality: { only_integer: true }
 
   belongs_to :publisher
-  has_many :orders
+  has_many :orders, through: :carted_books
   has_many :images
+  has_many :category_books
+  has_many :categories, through: :category_books
+  has_many :carted_books
 
   def is_discounted
     if price < 2
@@ -40,7 +43,8 @@ class Book < ApplicationRecord
       tax: self.tax,
       price_with_tax: self.total,
       updated_at: self.friendly_updated_at,
-      publisher: self.publisher.as_json
+      publisher: self.publisher.as_json,
+      categories: self.categories.as_json
     }
   end
 end
