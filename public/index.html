@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 
-<title>MiniBookStore - Index</title>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>MiniBookStore - Index</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
-    <link rel="stylesheet" href="books.css">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+  <link rel="stylesheet" href="books.css">
 
 
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
@@ -21,12 +21,13 @@
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script src="index.js" defer></script>
 </head>
+
 <body>
   <div id="app">
 
 <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="#">MiniBookStore</a>
+    <a class="navbar-brand" href="/#/">MiniBookStore</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -34,10 +35,10 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="/#/">Home <span class="sr-only">(current)</span></a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Link</a>
+          <a class="nav-link" href="/#/books/new">New Book</a>
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -51,7 +52,7 @@
             </div>
           </li>
           <li class="nav-item">
-          <a class="nav-link disabled" href="#">Disabled</a>
+          <a class="nav-link disabled" href="/#/">Disabled</a>
           </li>
         </ul>
       <form class="form-inline my-2 my-lg-0">
@@ -97,7 +98,7 @@
         <h4 class="card-title">{{ book.title }}</h4>
         <h6 class="card-subtitle mb-2 text-muted">{{ book.author }}</h6>
         <p class="card-text">${{ book.price }}</p>
-        <a href="/#/" class="btn btn-primary">Book Details</a>
+        <router-link class="btn btn-primary" v-bind:to="{ path: '/books/' + book.id }">More Details</router-link>
       </div>
     </div>
   </div>
@@ -111,7 +112,73 @@
   <div class="container">
     <h2>{{ book.title }}</h2>
     <h4>{{ book.author }}</h4>
+    <div>
+      <router-link v-bind:to="{ path: '/books/edit/' + book.id }">Edit this Book</router-link>
+    </div>
     <a href="/#/">Back to all books</a>
+  </div>
+</template>
+
+<template id="new-book">
+  <div class="container">
+    <h1>Make a New Book</h1>
+    <ul>
+      <li class="text-danger" v-for="error in errors">{{ error }}</li>
+    </ul>
+    <div class="form-group">
+      <label>Title</label> 
+      <input type="text" class="form-control" v-model="title">
+    </div>
+    <div class="form-group">
+      <label>Author</label>
+      <input type="text" class="form-control" v-model="author">
+    </div>
+    <div class="form-group">
+      <label>Price</label>
+      <input type="text" class="form-control" v-model="price">
+    </div>
+    <div class="form-group">
+      <label>Number of Pages</label>
+      <input type="text" class="form-control" v-model="pages">
+    </div>
+    <div class="form-group">
+      <label>Publisher ID</label>
+      <input type="text" class="form-control" v-model="publisherId">
+    </div>
+    <button class="btn btn-primary" v-on:click="submit()">Submit</button>
+  </div>
+</template>
+
+<template id="edit-book">
+  <div class="container">
+    <h1>Edit {{ book.title }}</h1>
+    <ul>
+      <li class="text-danger" v-for="error in errors">{{ error }}</li>
+    </ul>
+    <div class="form-group">
+      <label>Title</label> 
+      <input type="text" class="form-control" v-model="title">
+    </div>
+    <div class="form-group">
+      <label>Author</label>
+      <input type="text" class="form-control" v-model="author">
+    </div>
+    <div class="form-group">
+      <label>Price</label>
+      <input type="text" class="form-control" v-model="price">
+    </div>
+    <div class="form-group">
+      <label>Number of Pages</label>
+      <input type="text" class="form-control" v-model="pages">
+    </div>
+    <div class="form-group">
+      <label>Publisher ID</label>
+      <input type="text" class="form-control" v-model="publisherId">
+    </div>
+    <button class="btn btn-primary" v-on:click="submit()">Submit</button>
+    <div>
+      <router-link v-bind:to="{ path: '/books/edit/' + book.id }">Edit this Book</router-link>
+    </div>
   </div>
 </template>
 

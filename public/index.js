@@ -26,15 +26,106 @@ var BookPage = {
     };
   },
   mounted: function() {
-    axios.get("/books/" + this.$route.params.id).then(
-      function(response) {
-        console.log(response);
-        this.book = response.data;
-      }.bind(this)
-    );
+    axios
+      .get("/v1/books/" + this.$route.params.id)
+      .then(
+        function(response) {
+          this.book = response.data;
+        }.bind(this)
+      )
+      .catch(function(error) {
+        console.log(error);
+      });
   },
   methods: {},
   computed: {}
+};
+
+var NewBook = {
+  template: "#new-book",
+  data: function() {
+    return {
+      title: "",
+      author: "",
+      price: null,
+      pages: null,
+      publisherId: null,
+      errors: []
+    };
+  },
+  methods: {
+    submit: function() {
+      var params = {
+        title: this.title,
+        author: this.author,
+        price: this.price,
+        pages: this.pages,
+        publisher_id: this.publisherId
+      };
+      axios
+        .post("/v1/books", params)
+        .then(function(response) {
+          console.log(response);
+          router.push("/#/");
+        })
+        .catch(
+          function(error) {
+            this.errors = error.response.data.errors;
+          }.bind(this)
+        );
+    }
+  }
+};
+
+var EditBook = {
+  template: "#edit-book",
+  data: function() {
+    return {
+      book: [],
+      title: "",
+      author: "",
+      price: null,
+      pages: null,
+      publisherId: null,
+      errors: []
+    };
+  },
+  mounted: function() {
+    axios
+      .get("/v1/books/" + this.$route.params.id)
+      .then(
+        function(response) {
+          console.log(response);
+          this.book = response.data;
+        }.bind(this)
+      )
+      .catch(function(error) {
+        console.log(error);
+      });
+  },
+  methods: {
+    submit: function() {
+      var params = {
+        title: this.title,
+        author: this.author,
+        price: this.price,
+        pages: this.pages,
+        publisher_id: this.publisherId
+      };
+      axios
+        .patch("/v1/books/" + this.book.id, params)
+        .then(
+          function(response) {
+            router.push("/books/" + this.book.id);
+          }.bind(this)
+        )
+        .catch(
+          function(error) {
+            this.errors = error.response.data.errors;
+          }.bind(this)
+        );
+    }
+  }
 };
 
 var SignupPage = {
@@ -114,10 +205,12 @@ var LogoutPage = {
 var router = new VueRouter({
   routes: [
     { path: "/", component: HomePage },
+    { path: "/books/new", component: NewBook },
     { path: "/books/:id", component: BookPage },
     { path: "/signup", component: SignupPage },
     { path: "/login", component: LoginPage },
-    { path: "/logout", component: LogoutPage }
+    { path: "/logout", component: LogoutPage },
+    { path: "/books/edit/:id", component: EditBook }
   ],
   scrollBehavior(to, from, savedPosition) {
     return { x: 0, y: 0 };
@@ -127,7 +220,7 @@ var router = new VueRouter({
 var app = new Vue({
   el: "#app",
   router: router,
-  mounted: function() {
+  created: function() {
     var jwt = localStorage.getItem("jwt");
     if (jwt) {
       axios.defaults.headers.common["Authorization"] = jwt;
