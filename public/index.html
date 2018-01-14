@@ -15,11 +15,13 @@
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script src="https://unpkg.com/vue/dist/vue.min.js"></script>
   <script src="https://unpkg.com/vue-router/dist/vue-router.min.js"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script src="index.js" defer></script>
+
 </head>
 
 <body>
@@ -35,7 +37,7 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link" href="/#/">Home <span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="/#/">Home<span class="sr-only">(current)</span></a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/#/books/new">New Book</a>
@@ -63,6 +65,9 @@
   </nav>
 
     <router-view></router-view>
+
+
+
   </div>
 </body>
 </html>
@@ -107,7 +112,7 @@
 </template>
 
 <template id="book-page">
-  <div class="container">
+  <div class="container" style="color: white;">
     <h2>{{ book.title }}</h2>
     <h4>{{ book.author }}</h4>
     <div>
@@ -118,7 +123,7 @@
 </template>
 
 <template id="new-book">
-  <div class="container">
+  <div class="container" style="color: white;">
     <h1>Make a New Book</h1>
     <ul>
       <li class="text-danger" v-for="error in errors">{{ error }}</li>
@@ -148,7 +153,7 @@
 </template>
 
 <template id="edit-book">
-  <div class="container">
+  <div class="container" style="color: white">
     <h1>Edit {{ book.title }}</h1>
     <ul>
       <li class="text-danger" v-for="error in errors">{{ error }}</li>
@@ -181,7 +186,7 @@
 </template>
 
 <template id="signup-page">
-  <div class="container">
+  <div class="container" style="color: white;">
     <h1>Signup</h1>
     <ul>
       <li class="text-danger" v-for="error in errors">{{ error }}</li>
@@ -207,7 +212,7 @@
 </template>
 
 <template id="login-page">
-  <div class="container">
+  <div class="container" style="color: white;">
     <h1>Login</h1>
     <ul>
       <li class="text-danger" v-for="error in errors">{{ error }}</li>

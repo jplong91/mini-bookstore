@@ -53,6 +53,9 @@ var NewBook = {
       errors: []
     };
   },
+  // mounted: function() {
+  //   $(".collapse").collapse("hide");
+  // },
   methods: {
     submit: function() {
       var params = {
